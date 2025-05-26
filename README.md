@@ -8,7 +8,7 @@
 
 1. 启动服务器：
 ```
-npm start
+node server.js
 ```
 
 2. 在浏览器中访问：
