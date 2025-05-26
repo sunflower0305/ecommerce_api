@@ -15,21 +15,3 @@ node server.js
 ```
 http://localhost:3000/api-docs
 ```
-
-### 添加新的API文档
-
-在`swagger-routes.js`文件中使用JSDoc格式添加API注释。
-
-示例：
-```javascript
-/**
- * @swagger
- * /api/endpoint:
- *   get:
- *     summary: 接口描述
- *     tags: [分类]
- *     responses:
- *       200:
- *         description: 成功响应
- */
-```
