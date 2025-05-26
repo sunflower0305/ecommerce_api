@@ -1,0 +1,8 @@
+# Dependencies
+node_modules/
+
+# Database files
+users.db
+
+# Public directory
+public/
