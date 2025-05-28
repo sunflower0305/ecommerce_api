@@ -11,6 +11,8 @@
  *     description: 订单相关接口
  *   - name: 新闻
  *     description: 新闻相关接口
+ *   - name: 管理员
+ *     description: 管理员相关接口
  */
 
 /**
@@ -33,10 +35,25 @@
  *           type: integer
  *         title:
  *           type: string
+ *         description:
+ *           type: string
+ *         image:
+ *           type: string
  *         price:
+ *           type: number
+ *         category:
+ *           type: string
+ *         rate:
  *           type: number
  *         stock:
  *           type: integer
+ *     Admin:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         username:
+ *           type: string
  */
 
 /**
@@ -380,4 +397,185 @@
  *         description: 用户不存在
  *       500:
  *         description: 上传头像失败
+ */
+/**
+ * @swagger
+ * /admin/login:
+ *   post:
+ *     summary: 管理员登录
+ *     tags: [管理员]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 管理员登录成功
+ *       401:
+ *         description: 无效的管理员用户名或密码
+ *       500:
+ *         description: 服务器错误
+ */
+
+/**
+ * @swagger
+ * /admin/products:
+ *   get:
+ *     summary: 获取所有商品列表
+ *     tags: [管理员]
+ *     responses:
+ *       200:
+ *         description: 返回所有商品列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
+ *       500:
+ *         description: 服务器错误
+ *   post:
+ *     summary: 新增商品
+ *     tags: [管理员]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - price
+ *               - stock
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               category:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *               rate:
+ *                 type: number
+ *               stock:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: 商品新增成功
+ *       400:
+ *         description: 缺少必要参数
+ *       500:
+ *         description: 服务器错误
+ */
+
+/**
+ * @swagger
+ * /admin/products/{productId}:
+ *   put:
+ *     summary: 修改商品信息
+ *     tags: [管理员]
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 商品ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               category:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *               rate:
+ *                 type: number
+ *               stock:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: 商品修改成功
+ *       400:
+ *         description: 缺少必要参数
+ *       404:
+ *         description: 未找到指定商品
+ *       500:
+ *         description: 服务器错误
+ *   delete:
+ *     summary: 删除商品
+ *     tags: [管理员]
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 商品ID
+ *     responses:
+ *       200:
+ *         description: 商品删除成功
+ *       404:
+ *         description: 未找到指定商品
+ *       500:
+ *         description: 服务器错误
+ */
+
+/**
+ * @swagger
+ * /upload_product_image:
+ *   post:
+ *     summary: 上传商品图片
+ *     tags: [管理员]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - productImage
+ *             properties:
+ *               productImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: 商品图片文件
+ *     responses:
+ *       200:
+ *         description: 图片上传成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 imageUrl:
+ *                   type: string
+ *       400:
+ *         description: 缺少图片文件
+ *       500:
+ *         description: 上传图片失败
  */
