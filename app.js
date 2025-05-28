@@ -482,5 +482,130 @@ app.post('/check_stock', (req, res) => {
     });
 });
 
+
+// 管理员登录 API
+app.post('/admin/login', (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: '管理员用户名和密码是必填项。' });
+    }
+
+    const sql = `SELECT id, username, password_hash FROM admins WHERE username = ?`;
+    dbUsers.get(sql, [username], async (err, admin) => {
+        if (err) {
+            console.error('管理员登录时数据库出错:', err.message);
+            return res.status(500).json({ error: '管理员登录失败: ' + err.message });
+        }
+        if (!admin) {
+            return res.status(401).json({ error: '无效的管理员用户名或密码。' });
+        }
+
+        try {
+            // 注意：这里直接比较明文密码，生产环境应使用 bcrypt 等库进行哈希比较
+            if (password === admin.password_hash) {
+                // TODO: 在生产环境中，这里应该生成并返回 JWT 或其他会话标识
+                res.status(200).json({
+                    message: '管理员登录成功。',
+                    adminId: admin.id,
+                    username: admin.username
+                });
+            } else {
+                res.status(401).json({ error: '无效的管理员用户名或密码。' });
+            }
+        } catch (error) {
+            console.error('服务器管理员登录过程中出错:', error.message);
+            res.status(500).json({ error: '服务器管理员登录过程中出错: ' + error.message });
+        }
+    });
+});
+
+
+// 新增：管理员商品管理 API
+// 获取所有商品
+app.get('/admin/products', (req, res) => {
+    const sql = `SELECT * FROM products`;
+    dbUsers.all(sql, [], (err, rows) => {
+        if (err) {
+            console.error('管理员获取商品列表时数据库出错:', err.message);
+            return res.status(500).json({ error: '获取商品列表失败: ' + err.message });
+        }
+        res.status(200).json(rows);
+    });
+});
+
+// 新增商品
+app.post('/admin/products', (req, res) => {
+    const { title, description, price, category, image, rate, stock } = req.body;
+    if (!title || !price || !stock) {
+        return res.status(400).json({ error: '商品标题、价格和库存是必填项。' });
+    }
+
+    const sql = `INSERT INTO products (title, description, price, category, image, rate, stock) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    dbUsers.run(sql, [title, description, price, category, image, rate, stock], function(err) {
+        if (err) {
+            console.error('管理员新增商品时数据库出错:', err.message);
+            return res.status(500).json({ error: '新增商品失败: ' + err.message });
+        }
+        res.status(201).json({ message: '商品新增成功。', productId: this.lastID });
+    });
+});
+
+// 修改商品
+app.put('/admin/products/:productId', (req, res) => {
+    const productId = req.params.productId;
+    const { title, description, price, category, image, rate, stock } = req.body;
+
+    if (!title && !description && price == null && !category && !image && rate == null && stock == null) {
+        return res.status(400).json({ error: '没有提供要更新的商品信息。' });
+    }
+
+    let updates = [];
+    let params = [];
+    if (title !== undefined) { updates.push('title = ?'); params.push(title); }
+    if (description !== undefined) { updates.push('description = ?'); params.push(description); }
+    if (price !== undefined) { updates.push('price = ?'); params.push(price); }
+    if (category !== undefined) { updates.push('category = ?'); params.push(category); }
+    if (image !== undefined) { updates.push('image = ?'); params.push(image); }
+    if (rate !== undefined) { updates.push('rate = ?'); params.push(rate); }
+    if (stock !== undefined) { updates.push('stock = ?'); params.push(stock); }
+
+    if (updates.length === 0) {
+         return res.status(400).json({ error: '没有提供有效的更新字段。' });
+    }
+
+    const sql = `UPDATE products SET ${updates.join(', ')} WHERE id = ?`;
+    params.push(productId);
+
+    dbUsers.run(sql, params, function(err) {
+        if (err) {
+            console.error('管理员修改商品时数据库出错:', err.message);
+            return res.status(500).json({ error: '修改商品失败: ' + err.message });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ error: '未找到指定商品或没有信息被修改。' });
+        }
+        res.status(200).json({ message: '商品修改成功。' });
+    });
+});
+
+// 删除商品
+app.delete('/admin/products/:productId', (req, res) => {
+    const productId = req.params.productId;
+
+    const sql = `DELETE FROM products WHERE id = ?`;
+    dbUsers.run(sql, [productId], function(err) {
+        if (err) {
+            console.error('管理员删除商品时数据库出错:', err.message);
+            return res.status(500).json({ error: '删除商品失败: ' + err.message });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ error: '未找到指定商品。' });
+        }
+        res.status(200).json({ message: '商品删除成功。' });
+    });
+});
+
+
 // 导出 app 对象
 module.exports = app;
